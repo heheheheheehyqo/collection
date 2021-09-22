@@ -150,14 +150,7 @@ class CollectionTest extends TestCase
 
     public function test_chunk_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
-        $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $chunks = $collection->slice(0)->chunk(3);
 
@@ -166,14 +159,8 @@ class CollectionTest extends TestCase
 
     public function test_chunk_json(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
         $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $chunks = $collection->chunk(3);
 
