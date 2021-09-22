@@ -71,6 +71,15 @@ class Reference extends Collection
         return parent::each($closure);
     }
 
+    public function map(\Closure $closure): array
+    {
+        if (!$this->initialized) {
+            $this->initialize();
+        }
+
+        return parent::map($closure);
+    }
+
     public function reduce(\Closure $closure, mixed $initial = null): mixed
     {
         if (!$this->initialized) {

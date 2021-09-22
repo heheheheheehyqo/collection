@@ -17,12 +17,8 @@ class CollectionTest extends TestCase
         ];
     }
 
-    public function test_create(): void
-    {
-        $this->assertInstanceOf(Collection::class, new Collection());
-    }
-
-    public function test_slice(): void
+    /** @return Collection<Item> */
+    private function mockCollection(): Collection
     {
         /** @var Collection<Item> */
         $collection = new Collection();
@@ -32,6 +28,19 @@ class CollectionTest extends TestCase
         foreach ($products as $product) {
             $collection->add($product);
         }
+
+        return $collection;
+    }
+
+    public function test_create(): void
+    {
+        $this->assertInstanceOf(Collection::class, new Collection());
+    }
+
+    public function test_slice(): void
+    {
+        $products = $this->mockProducts();
+        $collection = $this->mockCollection();
 
         $slice = $collection->slice(1, 1)->slice(0)->add($products['2.2']);
 
@@ -43,14 +52,8 @@ class CollectionTest extends TestCase
 
     public function test_foreach_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
         $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         foreach ($collection->slice(0) as $i => $item) {
             $this->assertEquals($products[array_keys($products)[$i]], $item);
@@ -59,28 +62,15 @@ class CollectionTest extends TestCase
 
     public function test_count_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
-        $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $this->assertCount(4, $collection->slice(0));
     }
 
     public function test_filter_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
         $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $product1Collection = $collection->slice(0)->filter(
             fn(Item $item) => str_starts_with($item->title, 'product 1.')
@@ -95,14 +85,7 @@ class CollectionTest extends TestCase
 
     public function test_reduce_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
-        $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $product1Collection = $collection->filter(
             fn(Item $item) => str_starts_with($item->title, 'product 1.')
@@ -124,18 +107,45 @@ class CollectionTest extends TestCase
 
     public function test_each_reference(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
-
-        $products = $this->mockProducts();
-
-        foreach ($products as $product) {
-            $collection->add($product);
-        }
+        $collection = $this->mockCollection();
 
         $collection
             ->slice(0)
             ->each(fn(Item $item) => $this->assertInstanceOf(Item::class, $item));
+    }
+
+    public function test_map_reference(): void
+    {
+        $products = $this->mockProducts();
+        $collection = $this->mockCollection();
+
+        $this->assertEquals(
+            array_combine(
+                array_map(fn(Item $item) => $item->title, $products),
+                array_map(fn(Item $item) => $item->amount, $products)
+            ),
+            $collection
+                ->slice(0)
+                ->map(fn(Item $item) => yield $item->title => $item->amount)
+        );
+
+        $this->assertEquals(
+            array_fill(0, count($products), null),
+            $collection
+                ->slice(0)
+                ->map(fn(Item $item) => null)
+        );
+
+        $this->assertEquals(
+            array_fill(0, count($products), null),
+            $collection
+                ->slice(0)
+                ->map(function (Item $item): \Generator {
+                    if (0) {
+                        yield;
+                    }
+                })
+        );
     }
 
     public function test_chunk_reference(): void

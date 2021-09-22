@@ -31,6 +31,35 @@ class Collection extends BaseCollection
         return $this;
     }
 
+    public function map(\Closure $closure): array
+    {
+        $map = [];
+
+        foreach ($this->list as $item) {
+            $result = $closure($item);
+
+            if ($result instanceof \Generator) {
+                $array = iterator_to_array($result);
+
+                if (!$array) {
+                    return array_fill(0, $this->count(), null);
+                }
+
+                if (is_string(array_keys($array)[0])) {
+                    foreach ($array as $key => $value) {
+                        $map[$key] = $value;
+                    }
+                } else {
+                    $map = [...$map, ...$array];
+                }
+            } else {
+                $map[] = $result;
+            }
+        }
+
+        return $map;
+    }
+
     public function reduce(\Closure $closure, mixed $initial = null): mixed
     {
         return array_reduce($this->list, $closure, $initial);
