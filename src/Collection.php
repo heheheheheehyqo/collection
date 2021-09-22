@@ -14,6 +14,7 @@ class Collection extends BaseCollection
         }
     }
 
+    /** @param T $item */
     public function add(object $item): self
     {
         $this->list[] = $item;
