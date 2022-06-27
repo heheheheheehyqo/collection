@@ -7,13 +7,17 @@ namespace Hyqo\Collection;
  */
 class Reference extends Collection
 {
-    private bool $initialized = false;
+    /** @var bool */
+    private $initialized = false;
 
-    private array $source;
+    /** @var array */
+    private $source;
 
-    private int $first;
+    /** @var int */
+    private $first;
 
-    private ?int $length;
+    /** @var int|null */
+    private $length;
 
     public static function create(array &$source, int $first, ?int $length = null): self
     {
@@ -53,7 +57,8 @@ class Reference extends Collection
         return parent::count();
     }
 
-    public function add(object $item): static
+    /** @return static */
+    public function add(object $item): Collection
     {
         if (!$this->initialized) {
             $this->initialize();
@@ -62,7 +67,8 @@ class Reference extends Collection
         return parent::add($item);
     }
 
-    public function each(\Closure $closure): static
+    /** @return static */
+    public function each(\Closure $closure): Collection
     {
         if (!$this->initialized) {
             $this->initialize();
@@ -80,7 +86,7 @@ class Reference extends Collection
         return parent::map($closure);
     }
 
-    public function reduce(\Closure $closure, mixed $initial = null): mixed
+    public function reduce(\Closure $closure, $initial = null)
     {
         if (!$this->initialized) {
             $this->initialize();

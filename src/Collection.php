@@ -5,7 +5,7 @@ namespace Hyqo\Collection;
 /**
  * @template T
  */
-class Collection extends BaseCollection
+class Collection extends AbstractCollection
 {
     public function __construct(...$items)
     {
@@ -50,7 +50,8 @@ class Collection extends BaseCollection
                         $map[$key] = $value;
                     }
                 } else {
-                    $map = [...$map, ...$array];
+                    /** @noinspection SlowArrayOperationsInLoopInspection */
+                    $map = array_merge($map, $array);
                 }
             } else {
                 $map[] = $result;
@@ -60,7 +61,7 @@ class Collection extends BaseCollection
         return $map;
     }
 
-    public function reduce(\Closure $closure, mixed $initial = null): mixed
+    public function reduce(\Closure $closure, $initial = null)
     {
         return array_reduce($this->list, $closure, $initial);
     }

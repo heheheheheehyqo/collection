@@ -73,10 +73,14 @@ class CollectionTest extends TestCase
         $collection = $this->mockCollection();
 
         $product1Collection = $collection->slice(0)->filter(
-            fn(Item $item) => str_starts_with($item->title, 'product 1.')
+            function (Item $item) {
+                return strpos($item->title, 'product 1.') === 0;
+            }
         );
         $product2Collection = $collection->slice(0)->filter(
-            fn(Item $item) => str_starts_with($item->title, 'product 2.')
+            function (Item $item) {
+                return strpos($item->title, 'product 2.') === 0;
+            }
         );
 
         $this->assertEquals(new Collection($products['1.1'], $products['1.2']), $product1Collection);
@@ -88,17 +92,25 @@ class CollectionTest extends TestCase
         $collection = $this->mockCollection();
 
         $product1Collection = $collection->filter(
-            fn(Item $item) => str_starts_with($item->title, 'product 1.')
+            function (Item $item) {
+                return strpos($item->title, 'product 1.') === 0;
+            }
         );
         $product2Collection = $collection->filter(
-            fn(Item $item) => str_starts_with($item->title, 'product 2.')
+            function (Item $item) {
+                return strpos($item->title, 'product 2.') === 0;
+            }
         );
 
         $product1Amount = $product1Collection->slice(0)->reduce(
-            fn($carry, Item $item) => $carry + $item->amount
+            function ($carry, Item $item) {
+                return $carry + $item->amount;
+            }
         );
         $product2Amount = $product2Collection->slice(0)->reduce(
-            fn($carry, Item $item) => $carry + $item->amount
+            function ($carry, Item $item) {
+                return $carry + $item->amount;
+            }
         );
 
         $this->assertEquals(3, $product1Amount);
@@ -111,7 +123,9 @@ class CollectionTest extends TestCase
 
         $collection
             ->slice(0)
-            ->each(fn(Item $item) => $this->assertInstanceOf(Item::class, $item));
+            ->each(function (Item $item) {
+                $this->assertInstanceOf(Item::class, $item);
+            });
     }
 
     public function test_map_reference(): void
@@ -121,19 +135,27 @@ class CollectionTest extends TestCase
 
         $this->assertEquals(
             array_combine(
-                array_map(fn(Item $item) => $item->title, $products),
-                array_map(fn(Item $item) => $item->amount, $products)
+                array_map(function (Item $item) {
+                    return $item->title;
+                }, $products),
+                array_map(function (Item $item) {
+                    return $item->amount;
+                }, $products)
             ),
             $collection
                 ->slice(0)
-                ->map(fn(Item $item) => yield $item->title => $item->amount)
+                ->map(function (Item $item) {
+                    yield $item->title => $item->amount;
+                })
         );
 
         $this->assertEquals(
             array_fill(0, count($products), null),
             $collection
                 ->slice(0)
-                ->map(fn(Item $item) => null)
+                ->map(function (Item $item) {
+                    return null;
+                })
         );
 
         $this->assertEquals(
@@ -184,7 +206,7 @@ class CollectionTest extends TestCase
         /** @var Collection<Item> */
         $collection = new Collection();
 
-        $count = 100_000;
+        $count = 100000;
         $perChunk = 100;
         $pages = (int)ceil($count / $perChunk);
 
@@ -200,9 +222,15 @@ class CollectionTest extends TestCase
 
 class Item
 {
-    public function __construct(
-        public string $title,
-        public int $amount,
-    ) {
+    /** @var string */
+    public $title;
+
+    /** @var int */
+    public $amount;
+
+    public function __construct(string $title, int $amount)
+    {
+        $this->title = $title;
+        $this->amount = $amount;
     }
 }

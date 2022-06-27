@@ -2,18 +2,25 @@
 
 namespace Hyqo\Collection;
 
-use Exception;
-use Traversable;
-
 /**
  * @template T
  */
 class Chunks implements \IteratorAggregate, \Countable, \JsonSerializable
 {
-    private int $count;
+    /** @var array */
+    protected $source;
 
-    public function __construct(private array &$source, private int $amount)
+    /** @var int */
+    protected $amount;
+
+    /** @var int */
+    protected $count;
+
+    public function __construct(array &$source, int $amount)
     {
+        $this->source = &$source;
+        $this->amount = $amount;
+
         $this->count = ceil(count($this->source) / $this->amount);
     }
 

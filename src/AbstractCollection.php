@@ -5,12 +5,13 @@ namespace Hyqo\Collection;
 /**
  * @template T
  */
-abstract class BaseCollection implements \Iterator, \Countable, \JsonSerializable
+abstract class AbstractCollection implements \Iterator, \Countable, \JsonSerializable
 {
-    private int $position = 0;
+    /** @var int */
+    private $position = 0;
 
     /** @var array<int, T> */
-    protected array $list = [];
+    protected $list = [];
 
     public function rewind(): void
     {
@@ -18,7 +19,7 @@ abstract class BaseCollection implements \Iterator, \Countable, \JsonSerializabl
     }
 
     /** @return T */
-    public function current(): mixed
+    public function current()
     {
         return $this->list[$this->position];
     }
