@@ -116,38 +116,37 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
         return array_reduce($this->elements, $closure, $initial);
     }
 
-    /** @return Reference<T> */
-    public function slice(int $first, ?int $length = null): Reference
+    /** @return static<T> */
+    public function slice(int $first, ?int $length = null): self
     {
-        return new Reference($this->elements, $first, $length);
+        return new static(array_slice($this->elements, $first, $length));
     }
 
-    /** @return Reference<T> */
-    public function copy(): Reference
+    /**
+     * @return static<T>
+     */
+    public function copy(): self
     {
         return $this->slice(0);
     }
 
-    /** @return Chunks<T> */
-    public function chunk(int $amount): Chunks
+    /** @return \Generator<static<T>> */
+    public function chunk(int $amount): \Generator
     {
-        return new Chunks($this->elements, $amount);
+        $count = ceil(count($this) / $amount);
+        $i = -1;
+
+        while (++$i <= $count - 1) {
+            yield $this->slice(($i * $amount), $amount);
+        }
     }
 
     /**
      * @param \Closure(T): bool $closure
-     * @return Collection<T>
+     * @return static<T>
      */
     public function filter(\Closure $closure): self
     {
-        $collection = new self();
-
-        foreach ($this->elements as $item) {
-            if ($closure($item)) {
-                $collection->add($item);
-            }
-        }
-
-        return $collection;
+        return new static(array_filter($this->elements, $closure));
     }
 }

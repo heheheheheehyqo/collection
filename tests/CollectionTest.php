@@ -200,7 +200,7 @@ class CollectionTest extends TestCase
                     $products['2.2']
                 ]
             ]),
-            json_encode($chunks)
+            json_encode(iterator_to_array($chunks))
         );
     }
 
@@ -227,7 +227,6 @@ class CollectionTest extends TestCase
  */
 class ItemCollection extends Collection
 {
-
 }
 
 class Item
