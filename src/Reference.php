@@ -4,132 +4,73 @@ namespace Hyqo\Collection;
 
 /**
  * @template T
+ * @implements \IteratorAggregate<int,T>
+ *
+ * @mixin Collection<T>
  */
-class Reference extends Collection
+class Reference implements \Countable, \IteratorAggregate, \JsonSerializable
 {
-    /** @var bool */
-    private $initialized = false;
+    /** @var array<T> */
+    protected $source;
 
-    /** @var array */
-    private $source;
+    /** @var Collection<T> */
+    protected $collection = null;
 
     /** @var int */
-    private $first;
+    protected $first;
 
     /** @var int|null */
-    private $length;
+    protected $length;
 
-    public static function create(array &$source, int $first, ?int $length = null): self
-    {
-        return (new self())->setReference($source, $first, $length);
-    }
-
-    public function setReference(array &$source, int $first, ?int $length): self
+    /**
+     * @param array<T> $source
+     */
+    public function __construct(array &$source, int $first, ?int $length = null)
     {
         $this->source = &$source;
         $this->first = $first;
         $this->length = $length;
-
-        return $this;
     }
 
-    private function initialize(): void
+    /**
+     * @return Collection<T>
+     */
+    private function collection(): Collection
     {
-        $this->list = array_slice($this->source, $this->first, $this->length);
-        $this->initialized = true;
-    }
-
-    public function rewind(): void
-    {
-        if (!$this->initialized) {
-            $this->initialize();
+        if (null === $this->collection) {
+            $this->collection = new Collection(array_slice($this->source, $this->first, $this->length));
         }
 
-        parent::rewind();
+        return $this->collection;
+    }
+
+    /**
+     * @param array<string,mixed> $arguments
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments)
+    {
+        return $this->collection()->$name(...$arguments);
     }
 
     public function count(): int
     {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::count();
+        return count($this->collection());
     }
 
-    /** @return static */
-    public function add(object $item): Collection
+    /**
+     * @return \Traversable<int,T>
+     */
+    public function getIterator(): \Traversable
     {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::add($item);
+        return $this->collection();
     }
 
-    /** @return static */
-    public function each(\Closure $closure): Collection
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::each($closure);
-    }
-
-    public function map(\Closure $closure): array
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::map($closure);
-    }
-
-    public function reduce(\Closure $closure, $initial = null)
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::reduce($closure, $initial);
-    }
-
-    /** @inheritDoc */
-    public function slice(int $first, ?int $length = null): self
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::slice($first, $length);
-    }
-
-    /** @inheritDoc */
-    public function chunk(int $amount): Chunks
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::chunk($amount);
-    }
-
-    public function filter(\Closure $closure): Collection
-    {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::filter($closure);
-    }
-
+    /**
+     * @return array<int,mixed>
+     */
     public function jsonSerialize(): array
     {
-        if (!$this->initialized) {
-            $this->initialize();
-        }
-
-        return parent::jsonSerialize();
+        return iterator_to_array($this->collection());
     }
 }

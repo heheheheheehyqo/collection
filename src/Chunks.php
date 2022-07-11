@@ -4,10 +4,11 @@ namespace Hyqo\Collection;
 
 /**
  * @template T
+ * @implements \IteratorAggregate<Reference<T>>
  */
 class Chunks implements \IteratorAggregate, \Countable, \JsonSerializable
 {
-    /** @var array */
+    /** @var array<T> */
     protected $source;
 
     /** @var int */
@@ -16,12 +17,16 @@ class Chunks implements \IteratorAggregate, \Countable, \JsonSerializable
     /** @var int */
     protected $count;
 
+    /**
+     * @param array<T> $source
+     * @param int $amount
+     */
     public function __construct(array &$source, int $amount)
     {
         $this->source = &$source;
         $this->amount = $amount;
 
-        $this->count = ceil(count($this->source) / $this->amount);
+        $this->count = (int)ceil(count($this->source) / $this->amount);
     }
 
     public function count(): int
@@ -29,17 +34,20 @@ class Chunks implements \IteratorAggregate, \Countable, \JsonSerializable
         return $this->count;
     }
 
-    /** @return Collection<T>[] */
+    /** @return \Generator<Reference<T>> */
     public function getIterator(): \Generator
     {
         $count = $this->count;
         $i = -1;
 
         while (++$i <= $count - 1) {
-            yield Reference::create($this->source, ($i * $this->amount), $this->amount);
+            yield new Reference($this->source, ($i * $this->amount), $this->amount);
         }
     }
 
+    /**
+     * @return array<int,mixed>
+     */
     public function jsonSerialize(): array
     {
         return iterator_to_array($this);

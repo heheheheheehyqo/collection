@@ -4,38 +4,83 @@ namespace Hyqo\Collection;
 
 /**
  * @template T
+ * @implements \IteratorAggregate<int,T>
  */
-class Collection extends AbstractCollection
+class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
 {
-    public function __construct(...$items)
+    /** @var array<int,T> */
+    protected $elements = [];
+
+    /**
+     * @param array<T> $items
+     */
+    final public function __construct(array $items = [])
     {
         foreach ($items as $item) {
             $this->add($item);
         }
     }
 
-    /** @param T $item */
-    public function add(object $item): self
+    public function count(): int
     {
-        $this->list[] = $item;
+        return count($this->elements);
+    }
+
+    /**
+     * @return \Traversable<int,T>
+     */
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->elements);
+    }
+
+    /**
+     * @return array<int,mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->elements;
+    }
+
+    /**
+     * @param T $item
+     * @return $this
+     */
+    public function add($item): self
+    {
+        $this->elements[] = $item;
 
         return $this;
     }
 
+    /** @return T */
+    public function get(int $index)
+    {
+        return $this->elements[$index];
+    }
+
+    /**
+     * @param \Closure(T): void $closure
+     * @return $this
+     */
     public function each(\Closure $closure): self
     {
-        foreach ($this->list as &$item) {
+        foreach ($this->elements as $item) {
             $closure($item);
         }
 
         return $this;
     }
 
+    /**
+     * @param \Closure(T):(\Generator<array-key,mixed,void>|mixed) $closure
+     * @return array<array-key,mixed|null>
+     */
     public function map(\Closure $closure): array
     {
         $map = [];
 
-        foreach ($this->list as $item) {
+        foreach ($this->elements as $item) {
             $result = $closure($item);
 
             if ($result instanceof \Generator) {
@@ -61,28 +106,43 @@ class Collection extends AbstractCollection
         return $map;
     }
 
+    /**
+     * @param \Closure(mixed,T): mixed $closure
+     * @param mixed $initial
+     * @return mixed|null
+     */
     public function reduce(\Closure $closure, $initial = null)
     {
-        return array_reduce($this->list, $closure, $initial);
+        return array_reduce($this->elements, $closure, $initial);
     }
 
-    /** @return Collection<T> */
+    /** @return Reference<T> */
     public function slice(int $first, ?int $length = null): Reference
     {
-        return Reference::create($this->list, $first, $length);
+        return new Reference($this->elements, $first, $length);
+    }
+
+    /** @return Reference<T> */
+    public function copy(): Reference
+    {
+        return $this->slice(0);
     }
 
     /** @return Chunks<T> */
     public function chunk(int $amount): Chunks
     {
-        return new Chunks($this->list, $amount);
+        return new Chunks($this->elements, $amount);
     }
 
+    /**
+     * @param \Closure(T): bool $closure
+     * @return Collection<T>
+     */
     public function filter(\Closure $closure): self
     {
         $collection = new self();
 
-        foreach ($this->list as $item) {
+        foreach ($this->elements as $item) {
             if ($closure($item)) {
                 $collection->add($item);
             }

@@ -1,12 +1,13 @@
 <?php
 
 use Hyqo\Collection\Collection;
-use JetBrains\PhpStorm\ArrayShape;
 use PHPUnit\Framework\TestCase;
 
 class CollectionTest extends TestCase
 {
-    #[ArrayShape(['1.1' => Item::class, '1.2' => Item::class, '2.1' => Item::class, '2.2' => Item::class])]
+    /**
+     * @return array{"1.1": Item, "1.2": Item, "2.1": Item, "2.2": Item}
+     */
     private function mockProducts(): array
     {
         return [
@@ -17,11 +18,9 @@ class CollectionTest extends TestCase
         ];
     }
 
-    /** @return Collection<Item> */
-    private function mockCollection(): Collection
+    private function mockCollection(): ItemCollection
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
+        $collection = new ItemCollection();
 
         $products = $this->mockProducts();
 
@@ -45,8 +44,8 @@ class CollectionTest extends TestCase
         $slice = $collection->slice(1, 1)->slice(0)->add($products['2.2']);
 
         $this->assertJsonStringEqualsJsonString(
-            json_encode(new Collection($products['1.2'], $products['2.2'])),
-            json_encode($slice)
+            (string)json_encode(new ItemCollection([$products['1.2'], $products['2.2']])),
+            (string)json_encode($slice)
         );
     }
 
@@ -55,7 +54,7 @@ class CollectionTest extends TestCase
         $products = $this->mockProducts();
         $collection = $this->mockCollection();
 
-        foreach ($collection->slice(0) as $i => $item) {
+        foreach ($collection->copy() as $i => $item) {
             $this->assertEquals($products[array_keys($products)[$i]], $item);
         }
     }
@@ -73,18 +72,24 @@ class CollectionTest extends TestCase
         $collection = $this->mockCollection();
 
         $product1Collection = $collection->slice(0)->filter(
-            function (Item $item) {
+            function (Item $item): bool {
                 return strpos($item->title, 'product 1.') === 0;
             }
         );
         $product2Collection = $collection->slice(0)->filter(
-            function (Item $item) {
+            function (Item $item): bool {
                 return strpos($item->title, 'product 2.') === 0;
             }
         );
 
-        $this->assertEquals(new Collection($products['1.1'], $products['1.2']), $product1Collection);
-        $this->assertEquals(new Collection($products['2.1'], $products['2.2']), $product2Collection);
+        $this->assertEquals(
+            iterator_to_array(new ItemCollection([$products['1.1'], $products['1.2']])),
+            iterator_to_array($product1Collection)
+        );
+        $this->assertEquals(
+            iterator_to_array(new ItemCollection([$products['2.1'], $products['2.2']])),
+            iterator_to_array($product2Collection)
+        );
     }
 
     public function test_reduce_reference(): void
@@ -135,10 +140,10 @@ class CollectionTest extends TestCase
 
         $this->assertEquals(
             array_combine(
-                array_map(function (Item $item) {
+                array_map(static function (Item $item) {
                     return $item->title;
                 }, $products),
-                array_map(function (Item $item) {
+                array_map(static function (Item $item) {
                     return $item->amount;
                 }, $products)
             ),
@@ -153,7 +158,7 @@ class CollectionTest extends TestCase
             array_fill(0, count($products), null),
             $collection
                 ->slice(0)
-                ->map(function (Item $item) {
+                ->map(function () {
                     return null;
                 })
         );
@@ -162,10 +167,8 @@ class CollectionTest extends TestCase
             array_fill(0, count($products), null),
             $collection
                 ->slice(0)
-                ->map(function (Item $item): \Generator {
-                    if (0) {
-                        yield;
-                    }
+                ->map(function () {
+                    yield;
                 })
         );
     }
@@ -203,8 +206,7 @@ class CollectionTest extends TestCase
 
     public function test_big_chunk(): void
     {
-        /** @var Collection<Item> */
-        $collection = new Collection();
+        $collection = new ItemCollection();
 
         $count = 100000;
         $perChunk = 100;
@@ -218,6 +220,14 @@ class CollectionTest extends TestCase
 
         $this->assertCount($pages, $chunks);
     }
+}
+
+/**
+ * @extends Collection<Item>
+ */
+class ItemCollection extends Collection
+{
+
 }
 
 class Item
