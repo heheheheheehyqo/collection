@@ -79,7 +79,10 @@ Now you have auto-completion (see the picture above)
 
 ## Methods
 
-### add`($item): static`
+### add
+```php
+function add($item): static
+```
 
 Add new item to collection:
 
@@ -87,25 +90,32 @@ Add new item to collection:
 $collection->add($item);
 ```
 
-### get`(int $index): T|null`
-
+### get
+```php
+function get(int $index): T|null
+```
 Get item of collection by index:
 
 ```php
 $collection->get(0);
 ```
 
-### each`(callable $closure): static<T>`
-
+### each
+```php
+function each(callable $closure): static<T>
+```
 Pass each item to a closure:
 
 ```php
 $collection->each(function(Product $product) {
-    //
+    // do something
 });
 ```
 
-### map`(callable $closure): static<T>`
+### map
+```php
+function map(callable $closure): static<T>
+```
 
 Pass each item to a closure and create a new collection of results.
 
@@ -113,12 +123,15 @@ The closure must return a value of `T` or `\Generator<T>`:
 
 ```php
 $collection->map(function(Product $product) {
-    //
+    // do something
     return $product;
 });
 ```
 
-### reduce`(callable $closure, $initial = null): mixed|null`
+### reduce
+```php
+function reduce(callable $closure, $initial = null): mixed|null
+```
 
 Reduces the collection to a single value:
 
@@ -132,7 +145,10 @@ $amount = $collection->reduce(function($carry, Product $product) {
 // 4
 ```
 
-### slice`(int $first, ?int $length = null): static<T>`
+### slice
+```php
+function slice(int $first, ?int $length = null): static<T>
+```
 
 Create a new collection with a slice of the current one:
 
@@ -140,7 +156,10 @@ Create a new collection with a slice of the current one:
 $collection->slice(3);
 ```
 
-### copy`(): static<T>`
+### copy
+```php
+function copy(): static<T>
+```
 
 Create a new collection with the same elements (alias for `slice(0)`):
 
@@ -148,7 +167,10 @@ Create a new collection with the same elements (alias for `slice(0)`):
 $collection->copy();
 ```
 
-### chunk`(int $length): \Generator<static<T>>`
+### chunk
+```php
+function chunk(int $length): \Generator<static<T>>
+```
 
 Breaks the collection into multiple collections of a given length. The last one may contain fewer elements:
 
@@ -156,7 +178,10 @@ Breaks the collection into multiple collections of a given length. The last one 
 $collection->chunk(10);
 ```
 
-### filter`(callable $closure): static<T>`
+### filter
+```php
+function filter(callable $closure): static<T>
+```
 
 Pass each item to a closure and create a new collection of items for which its result will be `true`.
 
