@@ -68,7 +68,8 @@ $collection = new Collection();
 use Hyqo\Collection\Collection;
 
 /** @extends Collection<Product> */
-class ProductCollection extends Collection {
+class ProductCollection extends Collection 
+{
 }
 
 
@@ -80,6 +81,7 @@ Now you have auto-completion (see the picture above)
 ## Methods
 
 ### add
+
 ```php
 function add($item): static
 ```
@@ -91,9 +93,11 @@ $collection->add($item);
 ```
 
 ### get
+
 ```php
 function get(int $index): T|null
 ```
+
 Get item of collection by index:
 
 ```php
@@ -101,9 +105,11 @@ $collection->get(0);
 ```
 
 ### each
+
 ```php
 function each(callable $closure): static<T>
 ```
+
 Pass each item to a closure:
 
 ```php
@@ -113,6 +119,7 @@ $collection->each(function(Product $product) {
 ```
 
 ### map
+
 ```php
 function map(callable $closure): static<T>
 ```
@@ -129,6 +136,7 @@ $collection->map(function(Product $product) {
 ```
 
 ### reduce
+
 ```php
 function reduce(callable $closure, $initial = null): mixed|null
 ```
@@ -146,6 +154,7 @@ $amount = $collection->reduce(function($carry, Product $product) {
 ```
 
 ### slice
+
 ```php
 function slice(int $first, ?int $length = null): static<T>
 ```
@@ -157,6 +166,7 @@ $collection->slice(3);
 ```
 
 ### copy
+
 ```php
 function copy(): static<T>
 ```
@@ -168,6 +178,7 @@ $collection->copy();
 ```
 
 ### chunk
+
 ```php
 function chunk(int $length): \Generator<static<T>>
 ```
@@ -179,6 +190,7 @@ $collection->chunk(10);
 ```
 
 ### filter
+
 ```php
 function filter(callable $closure): static<T>
 ```
