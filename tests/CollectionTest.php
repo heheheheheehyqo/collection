@@ -3,6 +3,8 @@
 use Hyqo\Collection\Collection;
 use PHPUnit\Framework\TestCase;
 
+use function Hyqo\Collection\collect;
+
 class CollectionTest extends TestCase
 {
     /**
@@ -31,11 +33,6 @@ class CollectionTest extends TestCase
         return $collection;
     }
 
-    public function test_create(): void
-    {
-        $this->assertInstanceOf(Collection::class, new Collection());
-    }
-
     public function test_slice(): void
     {
         $products = $this->mockProducts();
@@ -49,7 +46,16 @@ class CollectionTest extends TestCase
         );
     }
 
-    public function test_foreach_reference(): void
+    public function test_copy(): void
+    {
+        $collection = $this->mockCollection();
+        $collectionCopy = $collection->copy();
+
+        $this->assertEquals($collection, $collectionCopy);
+        $this->assertNotSame($collection, $collectionCopy);
+    }
+
+    public function test_foreach(): void
     {
         $products = $this->mockProducts();
         $collection = $this->mockCollection();
@@ -59,14 +65,16 @@ class CollectionTest extends TestCase
         }
     }
 
-    public function test_count_reference(): void
+    public function test_count(): void
     {
         $collection = $this->mockCollection();
 
         $this->assertCount(4, $collection->slice(0));
+
+        $this->assertCount(3, collect([1, 2, 3]));
     }
 
-    public function test_filter_reference(): void
+    public function test_filter(): void
     {
         $products = $this->mockProducts();
         $collection = $this->mockCollection();
@@ -92,7 +100,7 @@ class CollectionTest extends TestCase
         );
     }
 
-    public function test_reduce_reference(): void
+    public function test_reduce(): void
     {
         $collection = $this->mockCollection();
 
@@ -122,62 +130,42 @@ class CollectionTest extends TestCase
         $this->assertEquals(7, $product2Amount);
     }
 
-    public function test_each_reference(): void
+    public function test_each(): void
     {
         $collection = $this->mockCollection();
 
         $collection
-            ->slice(0)
             ->each(function (Item $item) {
                 $this->assertInstanceOf(Item::class, $item);
             });
     }
 
-    public function test_map_reference(): void
+    public function test_map(): void
     {
-        $products = $this->mockProducts();
         $collection = $this->mockCollection();
 
+        $expectedProducts = array_map(static function (Item $item) {
+            $item->amount++;
+            return $item;
+        }, $this->mockProducts());
+
         $this->assertEquals(
-            array_combine(
-                array_map(static function (Item $item) {
-                    return $item->title;
-                }, $products),
-                array_map(static function (Item $item) {
-                    return $item->amount;
-                }, $products)
-            ),
+            new ItemCollection($expectedProducts),
             $collection
-                ->slice(0)
                 ->map(function (Item $item) {
-                    yield $item->title => $item->amount;
-                })
-        );
+                    $newItem = clone $item;
+                    $newItem->amount++;
 
-        $this->assertEquals(
-            array_fill(0, count($products), null),
-            $collection
-                ->slice(0)
-                ->map(function () {
-                    return null;
-                })
-        );
-
-        $this->assertEquals(
-            array_fill(0, count($products), null),
-            $collection
-                ->slice(0)
-                ->map(function () {
-                    yield;
+                    yield $newItem;
                 })
         );
     }
 
-    public function test_chunk_reference(): void
+    public function test_chunk(): void
     {
         $collection = $this->mockCollection();
 
-        $chunks = $collection->slice(0)->chunk(3);
+        $chunks = $collection->chunk(3);
 
         $this->assertCount(2, $chunks);
     }

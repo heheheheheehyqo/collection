@@ -16,9 +16,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
      */
     final public function __construct(array $items = [])
     {
-        foreach ($items as $item) {
-            $this->add($item);
-        }
+        $this->elements = array_values($items);
     }
 
     public function count(): int
@@ -53,65 +51,58 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
         return $this;
     }
 
-    /** @return T */
+    /**
+     * @return T|null
+     */
     public function get(int $index)
     {
-        return $this->elements[$index];
+        return $this->elements[$index] ?? null;
     }
 
     /**
-     * @param \Closure(T): void $closure
+     * @param callable(T, int): void $closure
      * @return $this
      */
-    public function each(\Closure $closure): self
+    public function each(callable $closure): self
     {
-        foreach ($this->elements as $item) {
-            $closure($item);
+        foreach ($this->elements as $index => $item) {
+            $closure($item, $index);
         }
 
         return $this;
     }
 
     /**
-     * @param \Closure(T):(\Generator<array-key,mixed,void>|mixed) $closure
-     * @return array<array-key,mixed|null>
+     * @param callable(T):(\Generator<int,T,mixed,void>|T) $closure
+     * @return static<T>
      */
-    public function map(\Closure $closure): array
+    public function map(callable $closure): self
     {
-        $map = [];
+        $collection = new static();
 
         foreach ($this->elements as $item) {
             $result = $closure($item);
 
             if ($result instanceof \Generator) {
-                $array = iterator_to_array($result);
-
-                if (!$array) {
-                    return array_fill(0, $this->count(), null);
-                }
-
-                if (is_string(array_keys($array)[0])) {
-                    foreach ($array as $key => $value) {
-                        $map[$key] = $value;
+                if ($result->valid()) {
+                    foreach ($result as $value) {
+                        $collection->add($value);
                     }
-                } else {
-                    /** @noinspection SlowArrayOperationsInLoopInspection */
-                    $map = array_merge($map, $array);
                 }
             } else {
-                $map[] = $result;
+                $collection->add($result);
             }
         }
 
-        return $map;
+        return $collection;
     }
 
     /**
-     * @param \Closure(mixed,T): mixed $closure
+     * @param callable(mixed,T): mixed $closure
      * @param mixed $initial
      * @return mixed|null
      */
-    public function reduce(\Closure $closure, $initial = null)
+    public function reduce(callable $closure, $initial = null)
     {
         return array_reduce($this->elements, $closure, $initial);
     }
@@ -130,22 +121,25 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
         return $this->slice(0);
     }
 
-    /** @return \Generator<static<T>> */
-    public function chunk(int $amount): \Generator
+    /**
+     * @param int $length
+     * @return \Generator<static<T>>
+     */
+    public function chunk(int $length): \Generator
     {
-        $count = ceil(count($this) / $amount);
+        $count = ceil(count($this) / $length);
         $i = -1;
 
         while (++$i <= $count - 1) {
-            yield $this->slice(($i * $amount), $amount);
+            yield $this->slice(($i * $length), $length);
         }
     }
 
     /**
-     * @param \Closure(T): bool $closure
+     * @param callable(T): bool $closure
      * @return static<T>
      */
-    public function filter(\Closure $closure): self
+    public function filter(callable $closure): self
     {
         return new static(array_filter($this->elements, $closure));
     }

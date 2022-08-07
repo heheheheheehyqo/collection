@@ -1,4 +1,169 @@
-# collection 
+# collection
+
 ![Packagist Version](https://img.shields.io/packagist/v/hyqo/collection?style=flat-square)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/hyqo/collection?style=flat-square)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hyqo/collection/run-tests?style=flat-square)
+
+Basic collection with [Generics support](https://blog.jetbrains.com/phpstorm/tag/generics/)
+
+<img alt="example" src="https://raw.githubusercontent.com/hyqo/assets/master/collection/example.png" width="800">
+
+## Install
+
+```sh
+composer require hyqo/collection
+```
+
+## Usage
+
+For example, we have an `Product` class that we want to wrap in a collection:
+
+```php
+class Product 
+{
+    public $title;
+    public $amount;
+    
+    public function __construct(string $title, int $amount){
+        $this->title = $title;
+        $this->amount = $amount;
+    }
+}
+```
+
+Create a collection:
+
+```php
+use \Hyqo\Collection\Collection;
+use function \Hyqo\Collection\collect;
+
+$collection = new Collection([new Product('foo', 10), new Product('bar', 2)]);
+$collection = collect([new Product('foo', 10), new Product('bar', 2)]);
+```
+
+### Auto-completion
+
+There are three ways for code auto-completion:
+
+**1.** Create a collection with items (not empty):
+
+```php
+use Hyqo\Collection\Collection;
+
+$collection = new Collection([new Product('foo', 10), new Product('bar', 2)]);
+```
+
+**2.** Use PHPDoc with Generics annotation:
+
+```php
+use Hyqo\Collection\Collection;
+
+/** @var Collection<Product> $collection */
+$collection = new Collection();
+```
+
+**3.** Use your own class with `@extends` annotation:
+
+```php
+use Hyqo\Collection\Collection;
+
+/** @extends Collection<Product> */
+class ProductCollection extends Collection {
+}
+
+
+$collection = new ProductCollection();
+```
+
+Now you have auto-completion (see the picture above)
+
+## Methods
+
+### add`($item): static`
+
+Add new item to collection:
+
+```php
+$collection->add($item);
+```
+
+### get`(int $index): T|null`
+
+Get item of collection by index:
+
+```php
+$collection->get(0);
+```
+
+### each`(callable $closure): static<T>`
+
+Pass each item to a closure:
+
+```php
+$collection->each(function(Product $product) {
+    //
+});
+```
+
+### map`(callable $closure): static<T>`
+
+Pass each item to a closure and create a new collection of results.
+
+The closure must return a value of `T` or `\Generator<T>`:
+
+```php
+$collection->map(function(Product $product) {
+    //
+    return $product;
+});
+```
+
+### reduce`(callable $closure, $initial = null): mixed|null`
+
+Reduces the collection to a single value:
+
+```php
+$collection = new Collection([new Product('foo', 10), new Product('bar', 2)]);
+
+$amount = $collection->reduce(function($carry, Product $product) {
+    return $carry + $product->amount;
+});
+
+// 4
+```
+
+### slice`(int $first, ?int $length = null): static<T>`
+
+Create a new collection with a slice of the current one:
+
+```php
+$collection->slice(3);
+```
+
+### copy`(): static<T>`
+
+Create a new collection with the same elements (alias for `slice(0)`):
+
+```php
+$collection->copy();
+```
+
+### chunk`(int $length): \Generator<static<T>>`
+
+Breaks the collection into multiple collections of a given length. The last one may contain fewer elements:
+
+```php
+$collection->chunk(10);
+```
+
+### filter`(callable $closure): static<T>`
+
+Pass each item to a closure and create a new collection of items for which its result will be `true`.
+
+The closure must return a `bool` value:
+
+```php
+$collection->filter(function(Product $product){
+    return $product->amount > 1;
+});
+```

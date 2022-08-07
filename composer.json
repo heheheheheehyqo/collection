@@ -21,6 +21,9 @@
     "autoload": {
         "psr-4": {
             "Hyqo\\Collection\\": "src"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     }
 }
