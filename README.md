@@ -16,7 +16,7 @@ composer require hyqo/collection
 
 ## Usage
 
-For example, we have an `Product` class that we want to wrap in a collection:
+For example, we have a `Product` class that we want to wrap in a collection:
 
 ```php
 class Product 
@@ -86,7 +86,7 @@ Now you have auto-completion (see the picture above)
 function add($item): static
 ```
 
-Add new item to collection:
+Add new item to a collection:
 
 ```php
 $collection->add($item);
@@ -98,7 +98,7 @@ $collection->add($item);
 function get(int $index): T|null
 ```
 
-Get item of collection by index:
+Get item of a collection by index:
 
 ```php
 $collection->get(0);
