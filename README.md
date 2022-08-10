@@ -204,3 +204,24 @@ $collection->filter(function(Product $product){
     return $product->amount > 1;
 });
 ```
+
+### toArray
+
+```php
+function toArray(?callable $closure = null): array
+```
+Return all items of a collection. You can transform every element of array via a closure. If you need an associative array, the closure should return a generator yielding a key/value pair.
+
+The closure must return any value or `\Generator<array-key,mixed>`:
+
+```php
+$collection->toArray(); // [Product, Product]
+
+$collection->toArray(function(Product $product) {
+    return $product->title;
+}); // ['foo', 'bar']
+
+$collection->toArray(function(Product $product): \Generator {
+    yield $product->title => $product->amount;
+}); // ['foo'=>10, 'bar'=>2]
+```

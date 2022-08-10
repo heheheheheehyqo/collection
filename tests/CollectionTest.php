@@ -208,6 +208,33 @@ class CollectionTest extends TestCase
 
         $this->assertCount($pages, $chunks);
     }
+
+    public function test_toArray(): void
+    {
+        $collection = $this->mockCollection();
+        $expectedProducts = $this->mockProducts();
+
+        $this->assertEquals(
+            $expectedProducts,
+            $collection
+                ->toArray(function (Item $item) {
+                    yield str_replace('product ', '', $item->title) => $item;
+                })
+        );
+
+        $this->assertEquals(
+            array_values($expectedProducts),
+            $collection
+                ->toArray(function (Item $item) {
+                    return $item;
+                })
+        );
+
+        $this->assertEquals(
+            array_values($expectedProducts),
+            $collection->toArray()
+        );
+    }
 }
 
 /**

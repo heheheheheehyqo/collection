@@ -143,4 +143,33 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
     {
         return new static(array_filter($this->elements, $closure));
     }
+
+    /**
+     * @param null|callable(T):(\Generator<array-key,T,mixed,void>|T) $closure
+     * @return array<array-key,mixed>
+     */
+    public function toArray(?callable $closure = null): array
+    {
+        if (null === $closure) {
+            return $this->elements;
+        }
+
+        $array = [];
+
+        foreach ($this->elements as $item) {
+            $result = $closure($item);
+
+            if ($result instanceof \Generator) {
+                if ($result->valid()) {
+                    foreach ($result as $key => $value) {
+                        $array[$key] = $value;
+                    }
+                }
+            } else {
+                $array[] = $result;
+            }
+        }
+
+        return $array;
+    }
 }
