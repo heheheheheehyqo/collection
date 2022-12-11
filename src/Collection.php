@@ -73,15 +73,15 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
     }
 
     /**
-     * @param callable(T):(\Generator<int,T,mixed,void>|T) $closure
+     * @param callable(T):(\Generator<int,T,mixed,void>|T) $callable
      * @return static<T>
      */
-    public function map(callable $closure): self
+    public function map(callable $callable): self
     {
         $collection = new static();
 
         foreach ($this->elements as $item) {
-            $result = $closure($item);
+            $result = $callable($item);
 
             if ($result instanceof \Generator) {
                 if ($result->valid()) {
@@ -98,13 +98,13 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
     }
 
     /**
-     * @param callable(mixed,T): mixed $closure
+     * @param callable(mixed,T): mixed $callback
      * @param mixed $initial
      * @return mixed|null
      */
-    public function reduce(callable $closure, $initial = null)
+    public function reduce(callable $callback, $initial = null)
     {
-        return array_reduce($this->elements, $closure, $initial);
+        return array_reduce($this->elements, $callback, $initial);
     }
 
     /** @return static<T> */

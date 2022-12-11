@@ -246,10 +246,8 @@ class ItemCollection extends Collection
 
 class Item
 {
-    /** @var string */
     public $title;
 
-    /** @var int */
     public $amount;
 
     public function __construct(string $title, int $amount)
