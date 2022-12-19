@@ -2,7 +2,7 @@
 
 ![Packagist Version](https://img.shields.io/packagist/v/hyqo/collection?style=flat-square)
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/hyqo/collection?style=flat-square)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/hyqo/collection/run-tests?style=flat-square&label=tests)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/hyqo/collection/tests.yml?branch=main&style=flat-square&label=tests)
 
 Basic collection with [Generics support](https://blog.jetbrains.com/phpstorm/tag/generics/)
 
